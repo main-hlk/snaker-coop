@@ -3,54 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Anında QR Kodlu P2P Co-Op Boss Savaşı</title>
+    <title>Kolay Okunabilir QR Kodlu Co-Op Boss Savaşı</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
         body {
-            background-color: #090d16; color: #fff; font-family: sans-serif;
+            background-color: #080c14; color: #fff; font-family: system-ui, -apple-system, sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            height: 100vh; width: 100vw; padding: 10px; overflow-y: auto; touch-action: none;
+            height: 100vh; width: 100vw; padding: 12px; overflow-y: auto; touch-action: none;
         }
-        #ui-container { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 420px; padding: 5px 0; }
-        .score-box { font-size: 12px; font-weight: bold; background: #1e293b; padding: 6px 10px; border-radius: 6px; border: 1px solid #334155; }
+        #ui-container { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 400px; padding: 4px 0; }
+        .score-box { font-size: 12px; font-weight: bold; background: #1e293b; padding: 6px 12px; border-radius: 6px; border: 1px solid #334155; }
         
-        #boss-hp-container { width: 100%; max-width: 420px; background: #334155; height: 20px; border-radius: 10px; border: 2px solid #f43f5e; margin-bottom: 6px; overflow: hidden; position: relative; }
-        #boss-hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #e11d48, #be123c); }
+        #boss-hp-container { width: 100%; max-width: 400px; background: #1e293b; height: 20px; border-radius: 10px; border: 2px solid #ef4444; margin-bottom: 6px; overflow: hidden; position: relative; }
+        #boss-hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #dc2626, #991b1b); transition: width 0.1s; }
         #boss-hp-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 11px; font-weight: bold; line-height: 16px; color: #fff; }
 
-        #game-container { position: relative; width: 100%; max-width: 420px; aspect-ratio: 1 / 1; border: 3px solid #a855f7; background-color: #020617; box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); border-radius: 12px; margin-bottom: 10px; }
+        #game-container { position: relative; width: 100%; max-width: 400px; aspect-ratio: 1 / 1; border: 3px solid #8b5cf6; background-color: #020617; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); border-radius: 12px; margin-bottom: 8px; }
         canvas { width: 100%; height: 100%; display: block; border-radius: 9px; }
 
-        .overlay-screen { position: absolute; top: 1%; left: 1%; width: 98%; height: 98%; background: rgba(15, 23, 42, 0.99); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 10; padding: 12px; text-align: center; border-radius: 10px; border: 2px solid #4c1d95; overflow-y: auto; }
+        .overlay-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.99); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 10; padding: 15px; text-align: center; border-radius: 9px; overflow-y: auto; }
         
-        .overlay-screen h2 { margin-bottom: 4px; font-size: 15px; color: #c084fc; }
-        .setting-label { margin-top: 4px; font-size: 11px; color: #94a3b8; }
+        .overlay-screen h2 { margin-bottom: 6px; font-size: 16px; color: #a78bfa; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .setting-label { margin-top: 5px; font-size: 11px; color: #94a3b8; }
         
-        select, textarea { background: #1e293b; color: #fff; border: 2px solid #4a5568; padding: 5px; font-family: inherit; font-size: 11px; width: 100%; border-radius: 6px; outline: none; }
-        textarea { height: 40px; font-size: 9px; word-break: break-all; resize: none; margin-top: 4px; }
+        select, textarea { background: #1e293b; color: #fff; border: 2px solid #475569; padding: 6px; font-family: inherit; font-size: 12px; width: 100%; border-radius: 6px; outline: none; }
+        textarea { height: 42px; font-size: 10px; word-break: break-all; resize: none; margin-top: 4px; }
 
-        #qrcode-box { background: #fff; padding: 6px; border-radius: 8px; margin: 6px 0; display: none; }
-        #reader { width: 100%; max-width: 220px; background: #000; border-radius: 8px; display: none; margin-top: 5px; }
+        /* OKUNMASI KOLAY BÜYÜK QR ALANI */
+        #qrcode-box { background: #fff; padding: 12px; border-radius: 12px; margin: 8px 0; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        #qrcode-target img { display: block; width: 160px; height: 160px; } /* Netlik için sabit boyut */
+        #reader { width: 100%; max-width: 240px; background: #000; border-radius: 8px; display: none; margin-top: 5px; border: 2px solid #8b5cf6; }
 
-        .btn-group { display: flex; gap: 6px; width: 100%; margin-top: 6px; }
-        button { background-color: #6d28d9; color: #fff; border: none; padding: 9px; font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 6px; width: 100%; }
-        button.accent { background-color: #10b981; }
-        button.secondary { background-color: #475569; }
+        .btn-group { display: flex; gap: 8px; width: 100%; margin-top: 8px; }
+        button { background-color: #7c3aed; color: #fff; border: none; padding: 10px; font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 6px; width: 100%; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
+        button.accent { background-color: #059669; }
+        button:active { filter: brightness(1.2); }
 
-        /* DEV ERGONOMİK MOBİL BUTONLAR */
-        #controls-wrapper { width: 100%; max-width: 420px; display: flex; justify-content: center; align-items: center; }
-        #controls { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 8px; width: 200px; aspect-ratio: 1 / 1; }
-        .btn { background-color: #1e293b; border: 2px solid #475569; color: #f8fafc; font-size: 24px; display: flex; align-items: center; justify-content: center; border-radius: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.4); cursor: pointer; }
-        .btn:active { background-color: #a855f7; }
+        /* MOBİL İÇİN BÜYÜK TUŞ TAKIMI */
+        #controls-wrapper { width: 100%; max-width: 400px; display: flex; justify-content: center; align-items: center; margin-top: 4px; }
+        #controls { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 10px; width: 190px; aspect-ratio: 1 / 1; }
+        .btn { background-color: #1e293b; border: 2px solid #475569; color: #f8fafc; font-size: 24px; display: flex; align-items: center; justify-content: center; border-radius: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; }
+        .btn:active { background-color: #8b5cf6; }
         #btn-up { grid-column: 2; grid-row: 1; }
         #btn-left { grid-column: 1; grid-row: 2; }
         #btn-right { grid-column: 3; grid-row: 2; }
         #btn-down { grid-column: 2; grid-row: 3; }
         
-        #status-text { font-size: 11px; color: #f59e0b; margin: 4px 0; font-weight: bold; }
-        .records-box { font-size: 10px; color: #a7f3d0; text-align: left; width: 100%; background: #111827; padding: 5px; border-radius: 6px; margin-top: 5px; border: 1px solid #1f2937; }
+        #status-text { font-size: 12px; color: #fbbf24; margin: 6px 0; font-weight: bold; padding: 2px 8px; border-radius: 4px; }
+        .records-box { font-size: 11px; color: #a7f3d0; text-align: left; width: 100%; background: #0f172a; padding: 6px; border-radius: 6px; margin-top: 6px; border: 1px solid #1e293b; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -62,7 +64,7 @@
 
     <div id="boss-hp-container">
         <div id="boss-hp-bar"></div>
-        <div id="boss-hp-text">BOSS HP: -- / --</div>
+        <div id="boss-hp-text">BOSS HP: YÜKLENİYOR...</div>
     </div>
 
     <div id="game-container">
@@ -71,47 +73,47 @@
         <div id="start-screen" class="overlay-screen">
             <h2>QR CO-OP BOSS SAVAŞI</h2>
             
-            <div class="setting-label">Oyun Zorluğu:</div>
+            <div class="setting-label">Zorluk Derecesi:</div>
             <select id="difficulty-select">
-                <option value="easy">Kolay Seviye (500 Can / 50 Hasar)</option>
-                <option value="medium" selected>Orta Seviye (1000 Can / 75 Hasar)</option>
-                <option value="hard">Zor Seviye (1000 Can / 20 Hasar)</option>
+                <option value="easy">Kolay Mod (500 Can / 50 Hasar)</option>
+                <option value="medium" selected>Orta Mod (1000 Can / 75 Hasar)</option>
+                <option value="hard">Zor Mod (1000 Can / 20 Hasar)</option>
                 <option value="special">Özel Mod [Gemini] (1500 Can / 100 Hasar)</option>
             </select>
 
             <div class="btn-group">
                 <button id="btn-create-room">1. ODA KUR (QR Üret)</button>
-                <button id="btn-join-room" class="accent">2. ODAYA KATIL (Kamera Aç)</button>
+                <button id="btn-join-room" class="accent">2. ODAYA KATIL (Tara)</button>
             </div>
 
             <div id="qrcode-box">
                 <div id="qrcode-target"></div>
-                <p style="color:#000; font-size:9px; font-weight:bold; margin-top:2px;">Arkadaşınız Kamerayla Tarasın</p>
+                <p style="color:#000; font-size:10px; font-weight:bold; margin-top:4px; letter-spacing:0.5px;">Arkadaşınız Bu Kodu Tarasın</p>
             </div>
 
             <div id="reader"></div>
 
-            <div id="status-text">Durum: Mod seçip bir odaya katılın veya kurun.</div>
+            <div id="status-text">Durum: Kurulum bekleniyor.</div>
 
-            <div id="manual-step" style="display:none; width:100%;">
-                <div class="setting-label" id="token-label">Karşı Cihaz Onay Kod Girişi:</div>
-                <textarea id="remote-token-input" placeholder="Gelen onay kodunu buraya yapıştırıp doğrula deyin..."></textarea>
-                <button id="btn-approve-token" class="accent" style="margin-top:4px; padding:6px;">Bağlantıyı Tamamla / Başlat</button>
+            <div id="manual-step" style="display:none; width:100%; background: rgba(30,41,59,0.5); padding: 8px; border-radius: 8px; border: 1px dashed #475569;">
+                <div class="setting-label" id="token-label" style="color: #f1f5f9; font-weight: bold;">Karşı Telefon Onay Kodu:</div>
+                <textarea id="remote-token-input" placeholder="Oluşan onay kodunu buraya girin/yapıştırın..."></textarea>
+                <button id="btn-approve-token" class="accent" style="margin-top:6px; padding:8px;">Bağlantıyı Bitir ve Başlat</button>
             </div>
 
             <div class="records-box">
-                <strong>🏆 En İyi Süre Rekorları:</strong><br>
+                <strong>🏆 En İyi Süre Rekorlarınız:</strong><br>
                 • Kolay: <span id="rec-easy">-</span> | Orta: <span id="rec-medium">-</span> | Zor: <span id="rec-hard">-</span> | Özel: <span id="rec-special">-</span>
             </div>
         </div>
 
         <div id="game-over-screen" class="overlay-screen" style="display:none; justify-content:center;">
-            <h2 id="end-title">OYUN BİTTİ</h2>
-            <div style="color:#fff; margin-top:10px; font-size:13px;">
-                Harcanan Süre: <span id="final-time">0.0</span> sn<br>
-                Durum: <span id="end-status">-</span>
+            <h2 id="end-title">SAVAŞ BİTTİ</h2>
+            <div style="color:#fff; margin:15px 0; font-size:14px; line-height: 1.5;">
+                Kayıtlı Süre: <span id="final-time">0.0</span> saniye<br>
+                Sonuç: <span id="end-status">-</span>
             </div>
-            <button id="restart-btn" style="margin-top:15px; width:70%; background-color:#a855f7;">YENİDEN BAŞLAT</button>
+            <button id="restart-btn" style="width:60%; background-color:#8b5cf6;">ANA MENÜYE DÖN</button>
         </div>
     </div>
 
@@ -160,40 +162,40 @@
         let gameInterval;
 
         let localConnection; let dataChannel;
-        const configuration = { iceServers: [{ urls: "stun:stun1.l.google.com:19302" }] };
+        // Bağlantıyı hafifletmek için stun sunucusunu teke indirdik
+        const configuration = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
-        // Rekor Kayıt Yönetimi
         function loadRecords() {
             ['easy', 'medium', 'hard', 'special'].forEach(m => {
-                let rec = localStorage.getItem("snake_boss_rec_" + m);
-                document.getElementById("rec-" + m).innerText = rec ? parseFloat(rec).toFixed(1) + "s" : "Yok";
+                let rec = localStorage.getItem("sb_v2_rec_" + m);
+                document.getElementById("rec-" + m).innerText = rec ? parseFloat(rec).toFixed(1) + "sn" : "Yok";
             });
         }
         loadRecords();
 
-        // --- ANINDA KİLİTLENMEYEN QR KOD MOTORU ---
+        // --- ULTRA SIKIŞTIRILMIŞ QR KOD SİSTEMİ ---
         document.getElementById("btn-create-room").addEventListener("click", () => {
             myRole = 'p1';
             chosenDifficulty = document.getElementById("difficulty-select").value;
             applyDifficultySettings();
-            statusText.innerText = "QR Kod Anında Oluşturuldu! Yan odadaki arkadaşınıza taratın.";
-            setupP2P(true);
+            statusText.innerText = "QR Kod Üretildi! Kamerayla rahatça okutabilirsiniz.";
+            setupP2PConnection(true);
         });
 
         document.getElementById("btn-join-room").addEventListener("click", () => {
             myRole = 'p2';
-            statusText.innerText = "Kamera aktifleşiyor... İzin verip QR kodu gösterin.";
+            statusText.innerText = "Kamera açılıyor... Kodu ortalayın.";
             document.getElementById("reader").style.display = "block";
             
             let scanner = new Html5Qrcode("reader");
-            scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 220 }, 
+            scanner.start({ facingMode: "environment" }, { fps: 15, qrbox: 200 }, 
                 (decodedText) => {
                     scanner.stop();
                     document.getElementById("reader").style.display = "none";
-                    statusText.innerText = "Kod çözüldü, el sıkışma yanıtı hesaplanıyor...";
-                    setupP2P(false, decodedText);
+                    statusText.innerText = "QR Kod Başarıyla Okundu! Onay hesaplanıyor...";
+                    setupP2PConnection(false, decodedText);
                 }
-            ).catch(() => { statusText.innerText = "Kamera açılamadı, manuel veri bekleniyor."; });
+            ).catch(() => { statusText.innerText = "Kamera Hatası! Kod elden girilmelidir."; });
         });
 
         function applyDifficultySettings() {
@@ -204,64 +206,65 @@
             bossHp = bossMaxHp;
         }
 
-        function setupP2P(isHost, incomingSignal = null) {
+        function setupP2PConnection(isHost, incomingData = null) {
             localConnection = new RTCPeerConnection(configuration);
 
             if (isHost) {
-                // Saniyelerce süren ICE adaylarını beklemeden ANINDA lokal teklif oluşturulur
                 dataChannel = localConnection.createDataChannel("bossChannel");
                 bindChannelEvents(dataChannel);
                 
                 localConnection.createOffer().then(offer => {
                     return localConnection.setLocalDescription(offer);
                 }).then(() => {
-                    // Sinyal bilgisini küçük paket formatına indirgeyip paketliyoruz
-                    const packet = { sdp: localConnection.localDescription, diff: chosenDifficulty };
-                    generateQRCode(btoa(JSON.stringify(packet)));
+                    // QR kodun içini hafifletmek için sadece gerekli SDP kısmını ayıklayıp sıkıştırıyoruz
+                    let compactSDP = { s: localConnection.localDescription.sdp, d: chosenDifficulty };
+                    let jsonStr = JSON.stringify(compactSDP);
                     
-                    // Adım 2 onay panelini aç
+                    // Büyük ve Seyrek (Okunması Kolay Seviye 4) QR Kod Basımı
+                    let qr = qrcode(4, 'L'); 
+                    qr.addData(btoa(unescape(encodeURIComponent(jsonStr))));
+                    qr.make();
+                    
+                    document.getElementById("qrcode-target").innerHTML = qr.createImgTag(5);
+                    document.getElementById("qrcode-box").style.display = "block";
+                    
                     document.getElementById("manual-step").style.display = "block";
-                    document.getElementById("token-label").innerText = "P2 Cihazından Çıkan Kodu Girin:";
+                    document.getElementById("token-label").innerText = "2. Telefondaki Onay Kodunu Buraya Girin:";
                 });
-            } else if (incomingSignal) {
-                const parsed = JSON.parse(atob(incomingSignal));
-                chosenDifficulty = parsed.diff;
-                applyDifficultySettings();
+            } else if (incomingData) {
+                try {
+                    let decodedStr = decodeURIComponent(escape(atob(incomingData)));
+                    let parsed = JSON.parse(decodedStr);
+                    chosenDifficulty = parsed.d;
+                    applyDifficultySettings();
 
-                localConnection.ondatachannel = (e) => {
-                    dataChannel = e.channel;
-                    bindChannelEvents(dataChannel);
-                };
+                    localConnection.ondatachannel = (e) => {
+                        dataChannel = e.channel;
+                        bindChannelEvents(dataChannel);
+                    };
 
-                localConnection.setRemoteDescription(parsed.sdp)
-                    .then(() => localConnection.createAnswer())
-                    .then(answer => localConnection.setLocalDescription(answer))
-                    .then(() => {
-                        const replyPacket = { sdp: localConnection.localDescription };
-                        document.getElementById("manual-step").style.display = "block";
-                        document.getElementById("token-label").innerText = "Bu kodu kopyalayıp Oda Sahibine (P1) yazın:";
-                        document.getElementById("remote-token-input").value = btoa(JSON.stringify(replyPacket));
-                        statusText.innerText = "Yanıt kodu oluşturuldu! Yukarıdaki kutudan kopyalayıp P1'e verin.";
-                    });
+                    localConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: parsed.s }))
+                        .then(() => localConnection.createAnswer())
+                        .then(answer => localConnection.setLocalDescription(answer))
+                        .then(() => {
+                            let replyObj = { s: localConnection.localDescription.sdp };
+                            document.getElementById("manual-step").style.display = "block";
+                            document.getElementById("token-label").innerText = "Aşağıdaki kodu kopyalayıp 1. Telefona girin:";
+                            document.getElementById("remote-token-input").value = btoa(unescape(encodeURIComponent(JSON.stringify(replyObj))));
+                            statusText.innerText = "Karşı onay kodu hazırlandı! Onu P1 ekranına yazın.";
+                        });
+                } catch(err) { alert("QR Kod kodu okunamadı veya hasarlı!"); }
             }
         }
 
-        function generateQRCode(textData) {
-            let qr = qrcode(0, 'M');
-            qr.addData(textData);
-            qr.make();
-            document.getElementById("qrcode-target").innerHTML = qr.createImgTag(5);
-            document.getElementById("qrcode-box").style.display = "block";
-        }
-
         document.getElementById("btn-approve-token").addEventListener("click", () => {
-            const rawVal = document.getElementById("remote-token-input").value.trim();
-            if(!rawVal) return alert("Onay kodu boş olamaz!");
+            const tokenVal = document.getElementById("remote-token-input").value.trim();
+            if(!tokenVal) return alert("Onay kodu boş bırakılamaz!");
             try {
-                const parsed = JSON.parse(atob(rawVal));
-                localConnection.setRemoteDescription(parsed.sdp);
-                statusText.innerText = "Doğrulandı, tünel açılıyor...";
-            } catch(e) { alert("Geçersiz veya eksik onay kodu!"); }
+                let decoded = JSON.parse(decodeURIComponent(escape(atob(tokenVal))));
+                localConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: decoded.s }));
+                statusText.innerText = "Doğrulandı! Savaş yükleniyor...";
+            } catch(e) { alert("Kod geçersiz veya eksik kopyalanmış!"); }
         });
 
         function bindChannelEvents(channel) {
@@ -290,10 +293,10 @@
             };
         }
 
-        // --- MOTOR VE BOSS SAVAŞ KURALLARI ---
+        // --- OYUN MEKANİKLERİ VE YAPAY ZEKA ---
         function initGame() {
             p1Snake = [{ x: gridSize * 3, y: gridSize * 3 }, { x: gridSize * 2, y: gridSize * 3 }];
-            p2Snake = [{ x: gridSize * 17, y: gridSize * 17 }, { x: gridSize * 18, y: gridSize * 17 }];
+            p2Snake = [{ x: gridSize * 16, y: gridSize * 16 }, { x: gridSize * 17, y: gridSize * 16 }];
             p1Dx = gridSize; p1Dy = 0; p2Dx = -gridSize; p2Dy = 0;
             playerHp = 100; bossHp = bossMaxHp; lasers = [];
             spawnGreenBox();
@@ -312,10 +315,7 @@
             moveLasers();
             checkCollisions();
 
-            if (bossHp <= 0) {
-                saveNewRecord(chosenDifficulty, totalElapsedSeconds);
-                triggerGameOver(true); return;
-            }
+            if (bossHp <= 0) { saveNewRecord(chosenDifficulty, totalElapsedSeconds); triggerGameOver(true); return; }
             if (playerHp <= 0) { triggerGameOver(false); return; }
 
             const payload = { type: "sync", p1Snake, p2Snake, greenBox, lasers, boss, bossHp, playerHp, totalElapsedSeconds };
@@ -328,13 +328,13 @@
             if (nX1 < 0) nX1 = canvas.width - gridSize; else if (nX1 >= canvas.width) nX1 = 0;
             if (nY1 < 0) nY1 = canvas.height - gridSize; else if (nY1 >= canvas.height) nY1 = 0;
             p1Snake.unshift({ x: nX1, y: nY1 });
-            if (p1Snake[0].x === greenBox.x && p1Snake[0].y === greenBox.y) { lasers.push({ x: p1Snake[0].x, y: p1Snake[0].y, dx: p1Dx*1.5, dy: p1Dy*1.5 }); spawnGreenBox(); } else { p1Snake.pop(); }
+            if (p1Snake[0].x === greenBox.x && p1Snake[0].y === greenBox.y) { lasers.push({ x: p1Snake[0].x, y: p1Snake[0].y, dx: p1Dx*1.6, dy: p1Dy*1.6 }); spawnGreenBox(); } else { p1Snake.pop(); }
 
             let nX2 = p2Snake[0].x + p2Dx; let nY2 = p2Snake[0].y + p2Dy;
             if (nX2 < 0) nX2 = canvas.width - gridSize; else if (nX2 >= canvas.width) nX2 = 0;
             if (nY2 < 0) nY2 = canvas.height - gridSize; else if (nY2 >= canvas.height) nY2 = 0;
             p2Snake.unshift({ x: nX2, y: nY2 });
-            if (p2Snake[0].x === greenBox.x && p2Snake[0].y === greenBox.y) { lasers.push({ x: p2Snake[0].x, y: p2Snake[0].y, dx: p2Dx*1.5, dy: p2Dy*1.5 }); spawnGreenBox(); } else { p2Snake.pop(); }
+            if (p2Snake[0].x === greenBox.x && p2Snake[0].y === greenBox.y) { lasers.push({ x: p2Snake[0].x, y: p2Snake[0].y, dx: p2Dx*1.6, dy: p2Dy*1.6 }); spawnGreenBox(); } else { p2Snake.pop(); }
         }
 
         function moveLasers() {
@@ -350,8 +350,8 @@
 
         function moveBossAI() {
             bossMoveCounter++;
-            let maxTick = chosenDifficulty === "special" ? 5 : 9;
-            if (bossMoveCounter >= maxTick) {
+            let stepDelay = chosenDifficulty === "special" ? 4 : 8;
+            if (bossMoveCounter >= stepDelay) {
                 bossMoveCounter = 0;
                 if (Math.random() < 0.4) {
                     let dir = Math.floor(Math.random() * 4);
@@ -366,17 +366,17 @@
         }
 
         function spawnGreenBox() {
-            greenBox = { Math: 0, x: Math.floor(Math.random() * tileCount) * gridSize, y: Math.floor(Math.random() * tileCount) * gridSize };
+            greenBox = { x: Math.floor(Math.random() * tileCount) * gridSize, y: Math.floor(Math.random() * tileCount) * gridSize };
         }
 
         function checkCollisions() {
-            let hit = (head) => (head.x >= boss.x && head.x < boss.x + 3*gridSize && head.y >= boss.y && head.y < boss.y + 3*gridSize);
-            if (hit(p1Snake[0]) || hit(p2Snake[0])) { playerHp -= bossDamage; }
+            let inside = (head) => (head.x >= boss.x && head.x < boss.x + 3*gridSize && head.y >= boss.y && head.y < boss.y + 3*gridSize);
+            if (inside(p1Snake[0]) || inside(p2Snake[0])) { playerHp -= bossDamage; }
         }
 
         function saveNewRecord(mode, time) {
-            let old = localStorage.getItem("snake_boss_rec_" + mode);
-            if (!old || time < parseFloat(old)) { localStorage.setItem("snake_boss_rec_" + mode, time); }
+            let prev = localStorage.getItem("sb_v2_rec_" + mode);
+            if (!prev || time < parseFloat(prev)) { localStorage.setItem("sb_v2_rec_" + mode, time); }
         }
 
         function triggerGameOver(success) {
@@ -386,8 +386,8 @@
         }
 
         function showEndScreen(success, time) {
-            document.getElementById("end-title").innerText = success ? "🎉 BAŞARIYLA KAZANILDI!" : "💥 TAKIM ELENDİ";
-            document.getElementById("end-status").innerText = success ? "Boss Canavarı Lazerle Yok Edildi!" : "Canınız tükendi.";
+            document.getElementById("end-title").innerText = success ? "🎉 BOSS YOK EDİLDİ!" : "💥 TAKIM ELENDİ";
+            document.getElementById("end-status").innerText = success ? "Muazzam koordinasyon, tebrikler!" : "Hasar sınırınız doldu.";
             document.getElementById("final-time").innerText = time.toFixed(1);
             gameOverScreen.style.display = "flex"; loadRecords();
         }
@@ -396,24 +396,24 @@
             timerEl.innerText = totalElapsedSeconds.toFixed(1) + "s";
             playerHpEl.innerText = Math.max(0, playerHp);
             bossHpBar.style.width = ((bossHp / bossMaxHp) * 100) + "%";
-            bossHpText.innerText = `BOSS CANI: ${bossHp} / ${bossMaxHp}`;
+            bossHpText.innerText = `BOSS HP: ${bossHp} / ${bossMaxHp}`;
         }
 
         function renderGame() {
             ctx.fillStyle = "#020617"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#22c55e"; ctx.fillRect(greenBox.x + 2, greenBox.y + 2, gridSize - 4, gridSize - 4);
-            ctx.fillStyle = "#7e22ce"; ctx.fillRect(boss.x + 1, boss.y + 1, 3*gridSize - 2, 3*gridSize - 2);
-            ctx.fillStyle = "#fff"; ctx.fillRect(boss.x + 10, boss.y + 12, 6, 6); ctx.fillRect(boss.x + 35, boss.y + 12, 6, 6);
+            ctx.fillStyle = "#10b981"; ctx.fillRect(greenBox.x + 2, greenBox.y + 2, gridSize - 4, gridSize - 4);
+            ctx.fillStyle = "#6d28d9"; ctx.fillRect(boss.x + 1, boss.y + 1, 3*gridSize - 2, 3*gridSize - 2);
+            ctx.fillStyle = "#fff"; ctx.fillRect(boss.x + 12, boss.y + 12, 6, 6); ctx.fillRect(boss.x + 36, boss.y + 12, 6, 6);
             
-            p1Snake.forEach(p => { ctx.fillStyle = "#2563eb"; ctx.fillRect(p.x+1, p.y+1, gridSize-2, gridSize-2); });
+            p1Snake.forEach(p => { ctx.fillStyle = "#3b82f6"; ctx.fillRect(p.x+1, p.y+1, gridSize-2, gridSize-2); });
             p2Snake.forEach(p => { ctx.fillStyle = "#059669"; ctx.fillRect(p.x+1, p.y+1, gridSize-2, gridSize-2); });
             ctx.fillStyle = "#38bdf8"; lasers.forEach(l => ctx.fillRect(l.x+6, l.y+6, 9, 9));
         }
 
         function changeDirection(dir) {
             let dx = 0, dy = 0;
-            if (dir === "left") { dx = -gridSize; } if (dir === "up") { dy = -gridSize; }
-            if (dir === "right") { dx = gridSize; } if (dir === "down") { dy = gridSize; }
+            if (dir === "left") dx = -gridSize; if (dir === "up") dy = -gridSize;
+            if (dir === "right") dx = gridSize; if (dir === "down") dy = gridSize;
             const payload = { type: "input", player: myRole, dx, dy };
             if (dataChannel && dataChannel.readyState === "open") dataChannel.send(JSON.stringify(payload));
             if (myRole === 'p1') { p1Dx = dx; p1Dy = dy; } else { p2Dx = dx; p2Dy = dy; }
